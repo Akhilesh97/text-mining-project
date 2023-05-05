@@ -14,7 +14,6 @@ from collections import Counter
 import pandas as pd
 import nltk
 from sklearn.feature_extraction.text import CountVectorizer
-
 stopword = nltk.corpus.stopwords.words('english')
 
 app = dash.Dash(external_stylesheets=[dbc.themes.BOOTSTRAP])
@@ -504,7 +503,398 @@ text_data_mining = html.Div([
                 ])
             ], title = "Visualizing cleaned data")
         ], always_open = True)    
-    ])                       
+    ])     
+
+raw_df_clustering = pd.read_csv("data/cleaned_data/df_tweets_cleaned.csv")
+processed_df_clustering = pd.read_csv("data/cleaned_data/df_tweets_cv.csv")   
+processed_df_arm = pd.read_csv("data/cleaned_data/tweets_trans.csv", error_bad_lines=False)
+tab_text_analytics = html.Div([
+        dbc.Tabs([
+            dbc.Tab([
+                html.Br(),
+                html.H4("Overview"),
+                dbc.Row([
+                    dbc.Col([
+                        dbc.Toast([
+                            html.P("""
+                                   On the data extraction and preparation tabs it was evident that tweets across multiple topics such as
+                                   'Soda Tax', 'Sugar Tax', 'Sweetened Beverage Tax', 'Obesity' were extracted. But, the question arises regarding 
+                                   the need to cluster the data when there is already data extracted for pre-defined topics.
+                                   """),
+                        ], style = {"width":"100%"}),
+                        html.Br(),
+                        html.Hr(),
+                        dbc.Toast([
+                            html.P("""
+                                   Clustering text data is a powerful tool that can reveal more nuanced insights and relationships between topics and sentiments within large volumes of textual data. By utilizing clustering algorithms, it is possible to identify specific groups of words used in tweets that may be used in different topics. For example, if tweets were gathered under the topics of 'Sugar Tax' and 'Sweetened Beverage Tax', clustering could identify similar words and phrases used by individuals tweeting about these topics. These insights can help understand the underlying patterns and relationships between topics and subtopics within the data.
+                                   """),
+                            html.P("""
+                                   Moreover, clustering can be used to categorize text documents into different groups or topics, making it easier to organize large collections of documents based on their underlying themes. This categorization can help identify common themes and patterns within a specific domain, making it easier to extract valuable insights from the data. Clustering can also be used for tasks such as text summarization, search engine optimization, and text anomaly detection, making it a versatile tool for analyzing text data in various contexts.
+                                   """),
+                            html.P("""
+                                   Moreover, clustering can be used to categorize text documents into different groups or topics, making it easier to organize large collections of documents based on their underlying themes. This categorization can help identify common themes and patterns within a specific domain, making it easier to extract valuable insights from the data. Clustering can also be used for tasks such as text summarization, search engine optimization, and text anomaly detection, making it a versatile tool for analyzing text data in various contexts.
+                                   """)
+                        ], header = "Why Clustering?", style = {"width":"100%"})
+                    ]),
+                    dbc.Col([
+                        html.Img(src = "static/images/clustering_text.png")
+                    ])
+                    
+                ]),
+                html.Br(),
+                html.Hr(),
+                html.H4("Data Prep"),
+                dbc.Row([
+                    dbc.Toast([
+                        html.P("""
+                               Before performing clustering on raw text data, it is important to properly prepare and preprocess the data to ensure that it is in a suitable format for analysis. The following are the common steps for data preparation for clustering on raw text data:
+                               """),
+                        html.Ul([
+                            html.Li("Text cleaning: The raw text data often contains irrelevant information such as stop words, punctuation marks, numbers, and special characters that can negatively affect the performance of the clustering algorithm. Therefore, it is necessary to remove such unwanted elements through techniques such as tokenization and stop-word removal.")    ,
+                            html.Li("Text normalization: Normalization is the process of converting all text data to a uniform format by removing unnecessary variations in text data. Common normalization techniques include stemming and lemmatization, which reduce words to their root form."),
+                            html.Li("Text representation: Text data needs to be transformed into numerical form for clustering algorithms to process it. This can be done using techniques such as bag-of-words, term frequency-inverse document frequency (TF-IDF), or word embeddings."),
+                            html.Li("Feature selection: Feature selection involves selecting the most relevant features or characteristics that will be used to compare and group the data. This step can help reduce the dimensionality of the data and improve the performance of the clustering algorithm."),
+                            html.Li("Data scaling: Some clustering algorithms, such as k-means, are sensitive to the scale of the data. Therefore, it may be necessary to scale or normalize the data to ensure that all features have equal importance in the clustering process."),
+                            html.Li("Data sampling: In cases where the text data is too large or there is a class imbalance in the data, it may be necessary to sample the data to improve the performance of the clustering algorithm.")
+                        ]),
+                        html.P("""
+                               Overall, data preparation for clustering on raw text data involves several important steps such as text cleaning, normalization, representation, feature selection, data scaling, and sampling. These steps are critical for ensuring that the data is in a suitable format for analysis and can improve the performance and accuracy of the clustering algorithm.
+                               """)
+                    ], header = "Steps involved in preparing data", style = {"width":"100%"})
+                ]),
+                html.Br(),                
+                dbc.Row([
+                    dbc.Col([
+                        dbc.Button("View Raw Data", id="raw-clustering-button", n_clicks=0),
+                        dbc.Modal([
+                                dbc.ModalHeader(dbc.ModalTitle("Raw Twitter Data")),
+                                dbc.ModalBody(plot_table(raw_df_clustering))
+                            ],
+                          id="raw-clustering-df-modal",
+                          size="xl",
+                          is_open=False,
+                        )
+                    ]),
+                    dbc.Col([
+                        dbc.Button("View Processed Data", id="processed-clustering-button", n_clicks=0),
+                        dbc.Modal([
+                                dbc.ModalHeader(dbc.ModalTitle("Processed Data")),
+                                dbc.ModalBody(plot_table(processed_df_clustering))
+                            ],
+                          id="processed-clustering-df-modal",
+                          size="xl",
+                          is_open=False,
+                        )
+                    ])
+                ]),
+                html.Br(),
+                html.Hr(),
+                html.H4("Code"),
+                dbc.Row([
+                    dbc.Col([
+                        html.P("Python Code")    
+                    ]),
+                    dbc.Col([
+                        html.P("R Code")    
+                    ])
+                ]),
+                html.Br(),
+                html.Hr(),
+                html.H4("Results"),
+                dbc.Row([
+                    dbc.Accordion([
+                        dbc.AccordionItem([
+                            dbc.Row([
+                                dbc.Toast([
+                                    html.Img(src = "static/images/elbow_plot.png")
+                                ], header = "Elbow Plot for determing clusters", style = {"width":"100%"})    
+                            ]),
+                            html.Br(),
+                            html.Hr(),
+                            html.H6("Sillouhete score comparision"),
+                            dbc.Row([
+                                dbc.Col([
+                                    dbc.Toast([
+                                        html.Img(src = "static/images/sil_score_2.png")
+                                    ],header = "n-Clusters = 2", style = {"width":"100%"})    
+                                ]),
+                                dbc.Col([
+                                    dbc.Toast([
+                                        html.Img(src = "static/images/sil_score_3.png")
+                                    ],header = "n-Clusters = 3", style = {"width":"100%"})
+                                ])
+                            ]),
+                            html.Br(),
+                            dbc.Row([
+                                dbc.Col([
+                                    dbc.Toast([
+                                        html.Img(src = "static/images/sil_score_4.png")
+                                    ],header = "n-Clusters = 4", style = {"width":"100%"})    
+                                ]),
+                                dbc.Col([
+                                    dbc.Toast([
+                                        html.Img(src = "static/images/sil_score_5.png")
+                                    ],header = "n-Clusters = 5", style = {"width":"100%"})
+                                ])
+                            ]),
+                            html.Br(),
+                            html.Hr(),
+                            html.H6("Looking words in each cluster"),
+                            dbc.Row([
+                                dbc.Col([
+                                    dbc.Toast([
+                                        html.Img(src = "static/images/cluster1.png")
+                                    ],header = "Cluster 1", style = {"width":"100%"})    
+                                ]),
+                                dbc.Col([
+                                    dbc.Toast([
+                                        html.Img(src = "static/images/cluster2.png")
+                                    ],header = "Cluster 2", style = {"width":"100%"})
+                                ])
+                            ]),
+                            html.Br(),
+                            dbc.Row([
+                                dbc.Col([
+                                    dbc.Toast([
+                                        html.Img(src = "static/images/cluster3.png")
+                                    ],header = "Cluster 3", style = {"width":"100%"})    
+                                ]),
+                                dbc.Col([
+                                    dbc.Toast([
+                                        html.Img(src = "static/images/cluster4.png")
+                                    ],header = "Cluster 4", style = {"width":"100%"})
+                                ])
+                            ]),
+                        ], title = "K-Means Clustering"),
+                        dbc.AccordionItem([
+                            html.Img(src = "static/images/dendro.png", style = {"width":"100%"})
+                        ], title = "Hierarchical Clustering")
+                    ], always_open = True)
+                ]),
+                html.Br(),
+                html.Hr(),
+                html.H4("Conclusion"),
+                dbc.Row([
+                    
+                ])
+            ], label = "Clustering"),
+            
+            dbc.Tab([
+                html.Br(),
+                html.H4("Overview"),
+                dbc.Row([            
+                    dbc.Toast([
+                        html.P("""
+                               Association rule mining is a popular technique in data mining that is used to discover relationships between variables in large datasets. When applied to textual data, it can help identify patterns and relationships between words or phrases that may be difficult to discern through other methods.
+
+                                 Here's an overview of the use of association rule mining on textual data:
+                               """),
+                               
+                        html.Ul([
+                          html.Li("Preprocessing: Textual data needs to be preprocessed before applying association rule mining. This may include tasks such as removing stop words, stemming, and tokenization.")  ,
+                          html.Li("Frequent itemset mining: Association rule mining requires identifying frequent itemsets, which are sets of words or phrases that frequently appear together in the text data. To identify frequent itemsets, algorithms such as Apriori or FP-Growth can be used."),
+                          html.Li("Generating association rules: Once frequent itemsets are identified, association rules can be generated. Association rules are statements of the form “if X, then Y.” For example, “if people buy bread, they are likely to buy milk.” The support and confidence measures are used to determine the strength of the association between X and Y."),
+                          html.Li("Interpretation: The results of association rule mining can be interpreted to gain insights into the relationships between words or phrases in the text data. This can help identify patterns, trends, and relationships that may not be apparent from a simple analysis of the text data.")
+                        ]),
+                        html.P("""
+                               Applications of association rule mining on textual data include market basket analysis, where the technique can be used to identify products that are frequently purchased together, and text mining, where it can be used to identify relationships between words or phrases in large collections of text data.
+                               Overall, association rule mining is a valuable tool for analyzing textual data, providing insights into relationships between words or phrases that may be difficult to uncover using other methods.
+                               """),
+                                          
+                    ], header = "How can ARM be used in our Context?",style = {"width":"100%"})    
+                  
+                ]),
+                html.Br(),
+                dbc.Row([
+                    dbc.Toast([
+                        html.Img(src = "static/images/supp_conf_lift.png", style = {"width":"60%"}),
+                        html.P("""
+                               Support: Support is a measure of the frequency of occurrence of an itemset in the dataset. It is calculated as the proportion of transactions in the dataset that contain the itemset. For example, if we have a dataset of 1,000 transactions, and the itemset {milk, bread} appears in 200 transactions, then the support of {milk, bread} is 200/1,000 = 0.2.
+                               """),
+                        html.P("""
+                               Confidence: Confidence is a measure of the strength of the association between the antecedent and the consequent in a rule. It is calculated as the proportion of transactions that contain both the antecedent and the consequent, out of the transactions that contain the antecedent. For example, if we have a rule {milk} → {bread} with 100 transactions containing both milk and bread, and 200 transactions containing milk, then the confidence of the rule is 100/200 = 0.5.
+                               """),
+                        html.P("""
+                               Lift: Lift is a measure of the strength of the association between the antecedent and the consequent in a rule, compared to what would be expected if they were independent. A lift value of 1 indicates that the antecedent and consequent are independent, while a lift value greater than 1 indicates a positive association between them. Lift is calculated as the ratio of the support of the itemset containing both the antecedent and the consequent to the product of the supports of the antecedent and the consequent. For example, if we have a rule {milk} → {bread} with a support of 0.2, and the support of milk is 0.4 and the support of bread is 0.3, then the lift of the rule is (0.2) / (0.4 * 0.3) = 1.67. This indicates that the presence of milk is associated with 67% higher likelihood of the presence of bread, compared to what would be expected if milk and bread were independent.
+                               """),
+                        
+                    ], header = ["Support, Confidence and Lift"],style = {"width":"100%"})    
+                ]),
+                html.Br(),
+                html.Hr(),
+                html.H4("Data Prep"),
+                dbc.Row([
+                   dbc.Toast([
+                       html.P("""
+                              Text data processing is an essential step in preparing textual data for association rule mining. Here are some common steps in text data processing for association rule mining:
+                              """),
+                       html.Ul([
+                            html.Li("""
+                                    Tokenization: Tokenization involves breaking up the text data into individual tokens or words. This step helps in identifying patterns and relationships between words or phrases in the text data.
+                                    """),
+                            html.Li("""
+                                    Stop word removal: Stop words are common words such as "the," "is," and "a" that do not add much meaning to the text data. Removing stop words helps reduce noise in the text data and improves the accuracy of association rule mining.
+                                    """),
+                            html.Li("""
+                                   Stemming: Stemming involves reducing words to their root or base form. For example, the words "running," "runs," and "ran" can be stemmed to "run." Stemming helps reduce the number of unique words in the text data and makes it easier to identify patterns and relationships between words.
+                                   """),
+                            html.Li("""
+                                    Filtering: Filtering involves removing words or phrases that are not relevant to the analysis. For example, if the analysis is focused on a particular topic, irrelevant words or phrases can be removed from the text data.
+                                    """),
+                            html.Li("""
+                                    Transformation: Transformation involves converting the text data into a format that can be used for association rule mining. For example, the text data can be converted into a transaction database format, where each transaction represents a document or a set of documents.
+                                    """),
+                            html.Li("""
+                                    Frequent itemset mining: Frequent itemset mining involves identifying sets of words or phrases that frequently appear together in the text data. This step is essential for generating association rules.
+                                    """),
+                            html.Li("""
+                                    Generating association rules: Once frequent itemsets are identified, association rules can be generated. Association rules are statements of the form "if X, then Y," which represent the relationships between words or phrases in the text data.
+                                    """)
+                       ]),
+                       html.P("""
+                              Overall, text data processing is a critical step in preparing textual data for association rule mining. By following these steps, it is possible to identify patterns and relationships between words or phrases in the text data and gain insights into the underlying structure of the data.
+                              """)
+                   ], header = "Steps involved in Preparing and Transforming the Raw Data", style = {"width":"100%"}) 
+                ]),
+                dbc.Row([
+                    dbc.Col([
+                        dbc.Button("View Raw Data", id="raw-arm-button", n_clicks=0),
+                        dbc.Modal([
+                                dbc.ModalHeader(dbc.ModalTitle("Raw Twitter Data")),
+                                dbc.ModalBody(plot_table(raw_df_clustering))
+                            ],
+                          id="raw-arm-df-modal",
+                          size="xl",
+                          is_open=False,
+                        )
+                    ]),
+                    dbc.Col([
+                        dbc.Button("View Processed Data", id="processed-arm-button", n_clicks=0),
+                        dbc.Modal([
+                                dbc.ModalHeader(dbc.ModalTitle("Processed Data")),
+                                dbc.ModalBody(plot_table(processed_df_arm))
+                            ],
+                          id="processed-arm-df-modal",
+                          size="xl",
+                          is_open=False,
+                        )
+                    ])
+                ]),
+                html.Br(),
+                html.Hr(),
+                html.H4("Code"),
+                dbc.Row([
+                    
+                ]),
+                html.Br(),
+                html.Hr(),
+                html.H4("Results"),
+                dbc.Row([
+                    dbc.Col([
+                        dbc.Toast([
+                            html.Img(src = "static/images/arm_rules_sup.png", style = {"width":"100%"})
+                        ], header = "Top 15 Rules Sorted by Support", style = {"width":"100%"})    
+                    ]),
+                    dbc.Col([
+                        dbc.Toast([
+                            html.Img(src = "static/images/arm_net_supp.png", style = {"width":"100%"})
+                        ], header = "Top 15 Rules Sorted by Support", style = {"width":"100%"})
+                    ])
+                ]),
+                html.Br(),
+                html.Hr(),
+                dbc.Row([
+                    dbc.Col([
+                        dbc.Toast([
+                            html.Img(src = "static/images/arm_rules_conf.png", style = {"width":"100%"})
+                        ], header = "Top 15 Rules Sorted by Confidence", style = {"width":"100%"})    
+                    ]),
+                    dbc.Col([
+                        dbc.Toast([
+                            html.Img(src = "static/images/arm_net_conf.png", style = {"width":"100%"})
+                        ], header = "Top 15 Rules Sorted by Confidence", style = {"width":"100%"})
+                    ])
+                ]),
+                dbc.Row([
+                    dbc.Col([
+                        dbc.Toast([
+                            html.Img(src = "static/images/arm_rules_lift.png", style = {"width":"100%"})
+                        ], header = "Top 15 Rules Sorted by Lift", style = {"width":"100%"})    
+                    ]),
+                    dbc.Col([
+                        dbc.Toast([
+                            html.Img(src = "static/images/arm_net_lift.png",style = {"width":"100%"})
+                        ], header = "Top 15 Rules Sorted by Lift", style = {"width":"100%"})
+                    ])
+                ]),
+                html.H4("Conclusion"),
+                dbc.Row([
+                    
+                ])
+                
+            ], label = "Association Rule Mining"),
+            dbc.Tab([
+                html.Br(),
+                html.H4("Overview"),
+                dbc.Row([
+                    html.P("""
+                           Latent Dirichlet Allocation (LDA) is a statistical model used in machine learning and natural language processing for topic modeling. The goal of LDA is to identify the topics that are present in a large collection of text data.
+                           """),
+                    html.P("""
+                            The basic idea behind LDA is that each document in the collection is assumed to be a mixture of several topics, and each topic is characterized by a distribution of words. LDA attempts to discover these latent topics by analyzing the patterns of word co-occurrences in the documents.                           
+                           """),
+                    html.P("""
+                            The Dirichlet distribution is used in LDA to model the distribution of topics in the documents and the distribution of words in the topics. The Dirichlet distribution is a probability distribution over the simplex, meaning that it assigns probabilities to all possible combinations of values that sum to 1. In the case of LDA, the Dirichlet distribution is used to model the distribution of topics and words in the corpus.                           
+                           """),
+                    html.P("""
+                           Overall, LDA is a powerful tool for analyzing large collections of text data and extracting meaningful insights from them. It has applications in a variety of fields, including information retrieval, recommendation systems, and social media analysis.
+                           """)
+                ]),
+                html.Br(),
+                html.Hr(),
+                html.H4("Data Prep"),
+                dbc.Row([
+                    html.P("""
+                           Corpus Creation: First, we need to gather a collection of documents that we want to analyze. This collection of documents is called a "corpus." The corpus can be created by web scraping, document collection or dataset from any source.
+                           """),
+                           
+                    html.P("""
+                            Text Preprocessing: Once we have the corpus, we need to preprocess the text to remove any noise or irrelevant information. This includes removing punctuation, stop words (common words such as "a," "an," and "the"), and words that are too common or too rare. We can also perform stemming or lemmatization to reduce words to their root form.                           
+                           """),
+                    html.P("""
+                           Text Representation: After preprocessing, we need to represent the text in a numerical format that LDA can understand. This is typically done using a bag-of-words model, where each document is represented as a vector of word frequencies. Other text representations, such as term frequency-inverse document frequency (TF-IDF), can also be used.
+                           """),
+                    html.P("""
+                           Model Training: Once the data is preprocessed and represented numerically, we can train an LDA model on the corpus. This involves specifying the number of topics we want to identify and running an algorithm to infer the topic distributions for each document and the word distributions for each topic.
+                           """),
+                    html.P("""
+                           Model Evaluation: Finally, we need to evaluate the performance of the LDA model by assessing the coherence and interpretability of the topics. This involves examining the top words in each topic and determining if they make intuitive sense and are coherent. We may need to adjust the number of topics or the preprocessing parameters to improve the quality of the topics.
+                           """)                           
+                ]),
+                html.Br(),
+                html.Hr(),
+                html.H4("Code"),
+                dbc.Row([
+                    
+                ]),
+                html.Br(),
+                html.Hr(),
+                html.H4("Results"),
+                dbc.Row([
+                    html.Img(src = "static/images/lda_plot1.png", style = {"width":"100%"})
+                ]),
+                dbc.Row([
+                    html.Img(src = "static/images/lda_plot2.png", style = {"width":"100%"})
+                ]),
+                html.Br(),
+                html.Hr(),
+                html.H4("Conclusion"),
+                dbc.Row([
+                    
+                ])
+            ], label = "Latent Direchelet Allocation")
+        ])        
+    ])                                   
 sidebar = html.Div(
     [
         html.H2("Should soda be taxed?", className="display-4"),
@@ -516,7 +906,7 @@ sidebar = html.Div(
             [
                 dbc.NavLink("Introduction", href="/", active="exact"),
                 dbc.NavLink("Text Data Mining", href="/page-1", active="exact"),
-                dbc.NavLink("Text Analytics", href="/page-2", active="exact"),
+                dbc.NavLink("Text Analytics -Unsupervised", href="/page-2", active="exact"),
             ],
             vertical=True,
             pills=True,
@@ -536,7 +926,7 @@ def render_page_content(pathname):
     elif pathname == "/page-1":
         return text_data_mining
     elif pathname == "/page-2":
-        return html.P("Oh cool, this is page 2!")
+        return tab_text_analytics
     # If the user tries to reach a different page, return a 404 message
     return html.Div(
         [
@@ -604,6 +994,30 @@ app.callback(
     Output("cv-df-modal", "is_open"),
     Input("cv-button", "n_clicks"),
     State("cv-df-modal", "is_open"),
+)(toggle_modal)
+
+app.callback(
+    Output("raw-clustering-df-modal", "is_open"),
+    Input("raw-clustering-button", "n_clicks"),
+    State("raw-clustering-df-modal", "is_open"),
+)(toggle_modal)
+
+app.callback(
+    Output("processed-clustering-df-modal", "is_open"),
+    Input("processed-clustering-button", "n_clicks"),
+    State("processed-clustering-df-modal", "is_open"),
+)(toggle_modal)
+
+app.callback(
+    Output("raw-arm-df-modal", "is_open"),
+    Input("raw-arm-button", "n_clicks"),
+    State("raw-arm-df-modal", "is_open"),
+)(toggle_modal)
+
+app.callback(
+    Output("processed-arm-df-modal", "is_open"),
+    Input("processed-arm-button", "n_clicks"),
+    State("processed-arm-df-modal", "is_open"),
 )(toggle_modal)
 
 if __name__ == "__main__":
